@@ -1,0 +1,10 @@
+{
+  "name": "调酒手册",
+  "short_name": "调酒手册",
+  "description": "离线鸡尾酒配方、原料匹配与 AI 调酒师",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#10110f",
+  "theme_color": "#10110f",
+  "lang": "zh-CN"
+}
