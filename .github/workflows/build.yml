@@ -12,6 +12,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,12 +41,12 @@ jobs:
           npx cap sync android
 
       - name: Configure release signing (from secrets)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
         shell: bash
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/mixology.keystore
+          echo "${{ env.KEYSTORE_BASE64 }}" | base64 --decode > android/app/mixology.keystore
           printf 'storeFile=mixology.keystore\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
-            "${{ secrets.KEYSTORE_PASSWORD }}" "${{ secrets.KEY_ALIAS }}" "${{ secrets.KEY_PASSWORD }}" \
+            "${{ env.KEYSTORE_PASSWORD }}" "${{ env.KEY_ALIAS }}" "${{ env.KEY_PASSWORD }}" \
             > android/keystore.properties
 
       - name: Build debug APK
@@ -51,7 +56,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Build signed release APK
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
         working-directory: android
         run: ./gradlew assembleRelease
 
@@ -63,7 +68,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload release APK
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: app-release
