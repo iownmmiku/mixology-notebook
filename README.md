@@ -63,6 +63,24 @@ cd android
 3. 填入该平台申请的 API 密钥
 4. 点击「测试连接」确认连通后保存
 
+## GitHub Actions 自动构建
+
+仓库内置了 [GitHub Actions 工作流](./.github/workflows/build.yml)：
+
+- 推送到 `main` 或手动触发：自动构建 **debug APK**，并作为 Artifact 上传
+- 推送 `v*` 标签（如 `git tag v1.4.0 && git push --tags`）：自动构建并**发布到 Releases**，附带 APK 下载
+
+> 要出**正式签名的 release APK**，请在仓库 Settings → Secrets and variables → Actions 中添加以下密钥（对应本机 `mixology.keystore`）：
+>
+> | Secret | 说明 |
+> |---|---|
+> | `KEYSTORE_BASE64` | 密钥库文件的 Base64 编码（PowerShell：`[Convert]::ToBase64String([IO.File]::ReadAllBytes("android\app\mixology.keystore"))`） |
+> | `KEYSTORE_PASSWORD` | 密钥库密码 |
+> | `KEY_ALIAS` | 别名（本项目为 `mixology`） |
+> | `KEY_PASSWORD` | 密钥密码 |
+>
+> 未配置上述密钥时，Actions 仍会产出可安装的 debug APK。
+
 ## 数据与版权
 
 - 内置配方整理自国际调酒师协会（IBA）官方名录及公开资料，仅供学习交流
