@@ -21,12 +21,21 @@ export type Recipe = {
   strength: 0 | 1 | 2 | 3;
   color: string;
   isCustom?: boolean;
+  sourceUrl?: string;
+  sourceLabel?: string;
 };
 
 export type ApiSettings = {
   endpoint: string;
   apiKey: string;
   model: string;
+  lastTest?: { ok: boolean; detail: string; testedAt: string };
+};
+
+export type NotebookData = {
+  favorites: string[];
+  recent: { recipeId: string; date: string }[];
+  notes: Record<string, { rating: number; text: string }>;
 };
 
 export type ChatMessage = {
