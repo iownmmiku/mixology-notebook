@@ -33,7 +33,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
           }}
         >
           <h1 style={{ fontSize: 20, margin: 0 }}>界面出现异常</h1>
-          <p style={{ margin: 0, fontSize: 13, color: '#888' }}>你的配方与酒柜都已保存在本机，重新加载即可继续。</p>
+          <p style={{ margin: 0, fontSize: 13, color: '#888' }}>重新加载后再试。若本地数据异常，请使用“我的手册”中的备份恢复；此操作不会清除数据。</p>
           <pre style={{ margin: 0, fontSize: 10, color: '#b25a3c', maxWidth: 360, overflow: 'auto', textAlign: 'left', whiteSpace: 'pre-wrap' }}>{`${this.state.message}\n${this.state.stack}`}</pre>
           <button
             onClick={() => window.location.reload()}

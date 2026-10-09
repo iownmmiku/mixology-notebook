@@ -3,9 +3,15 @@ import { ibaSeeds } from './iba';
 import { extraSeeds } from './extras';
 import { mocktailSeeds } from './mocktails';
 import { signatureSeeds } from './signature';
+import { collectedClassicSeeds } from './collectedClassics';
+import { collectedModernSeeds } from './collectedModern';
+import { collectedMocktailSeeds } from './collectedMocktails';
 import { make } from './shared';
 
-const allSeeds = [...ibaSeeds, ...extraSeeds, ...mocktailSeeds, ...signatureSeeds];
+const allSeeds = [
+  ...ibaSeeds, ...extraSeeds, ...mocktailSeeds, ...signatureSeeds,
+  ...collectedClassicSeeds, ...collectedModernSeeds, ...collectedMocktailSeeds,
+];
 
 export const builtInRecipes: Recipe[] = allSeeds.map(make);
 

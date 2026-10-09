@@ -1,91 +1,83 @@
 # 调酒手册 · Mixology Notebook
 
-一款离线的鸡尾酒配方手册 Android 应用：内置 **211 款配方**（IBA 官方 88 款、流行配方 83 款、无酒精 21 款、店家特调 19 款），支持全文搜索、按酒柜原料匹配可调配方、配方调整与自建，以及可接入 OpenAI 兼容接口的 AI 调酒师对话。
+一个离线优先的个人调酒手册，支持 Android 与响应式浏览器界面。1.4 版重做了配方库、酒柜、调酒师和个人手册，并保留原有个人配方及酒柜数据。
 
-## 功能特性
+## 日常使用
 
-- **配方库**：经典 / 现代 / 无酒精 / 特调 四大分类，含口味标签、酒精度、材料与份量、调制步骤、杯型/技法/装饰
-- **全文搜索**：按酒名、基酒、口味、原料模糊检索
-- **我的酒柜**：录入现有原料，即时计算「现在能调」与「差一点就能调」（先按缺少数量、再按已匹配数量排序）
-- **配方编辑**：任意配方可复制并调整、从零新建，全部保存在本机
-- **AI 调酒师**：支持 OpenAI Chat Completions 兼容接口（内置 DeepSeek / Kimi / 智谱 / 通义千问等国内直连提供商预设，含连接测试）；未配置时自动进入离线知识库模式
-- **离线优先**：所有配方、酒柜、设置均存于本地，无需联网
+- **配方库**：271 款内置配方，按名称、基酒、风味和材料搜索；收藏常用配方，查看材料、份量、步骤和来源。
+- **我的酒柜**：录入现有材料，识别常见别名和原料类别；计算完整匹配与缺少材料，并查看补买一种材料能解锁哪些配方。
+- **制作与记录**：缩放份量，逐步勾选制作步骤，使用计时器，记录评分、口味笔记和最近调制的配方。
+- **个人配方**：复制内置配方后调整，或从零建立自己的配方；保存失败会明确提示。
+- **调酒师**：未配置接口时使用本地推荐；先遵守无酒精与排除原料条件，再匹配风味。联网模式使用 OpenAI Chat Completions 兼容接口，提供商可自定义。
+- **备份与恢复**：在个人手册中导出或导入 JSON 备份，恢复上次本机快照。浏览器直接下载，Android 通过系统分享面板保存或发送文件。备份包含个人配方、酒柜、收藏和记录，**不包含 API 密钥**。
 
-## 技术栈
+## 数据与配方说明
 
-- [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
-- [Capacitor](https://capacitorjs.com/)（Android 原生壳，官方 `CapacitorHttp` 原生网络请求以绕过 WebView CORS）
-- [lucide-react](https://lucide.dev/) 图标
+1.4.1 新增 60 款逐页核对出处的配方：20 款经典与开胃酒、20 款现代与热带款、20 款无酒精款。完整目录与链接见 [新增配方来源](./RECIPE_SOURCES.md)。oz 换算率在来源标签中注明：多数酒款按 1 oz≈30 ml，部分无酒精款按美制 fl oz≈29.6 ml；“补满”保留适量，不会随杯数显示成虚构毫升数。自制糖浆的批量做法与单杯取用量分别说明。
 
-## 目录结构
+原有 v1 本地数据可直接读取，新写入的数据带有版本信息。读取失败时保留原始内容，不会在启动时用空数据覆盖；损坏数据需要通过有效备份恢复。导入是完整替换，操作前会保留本机快照，失败时尝试回滚。
 
-```
-src/
-  data/           配方数据（iba / extras / mocktails / signature）
-  App.tsx         页面与交互
-  api.ts          AI 接口调用（原生 HTTP + 连接测试）
-  storage.ts      本地存储
-  types.ts        类型定义
-android/          Capacitor 生成的 Android 工程
-```
+配方由公开资料整理，部分为家用调整版本。本轮核对了 Hanky Panky 与 Singapore Sling 的当前 IBA 配方，并修正了若干水果材料的单位。带来源链接的配方可打开原文核对；没有来源链接的条目不代表已逐项核验当前官方版本。材料别名、类别包含和替代关系不同，例如通用“威士忌”可由具体威士忌满足，但不同樱桃利口酒不会一律互换。
 
-## 本地开发
+API 密钥仍存放在本设备的 localStorage，未使用 Android Keystore；请使用专用于此应用的密钥。切换提供商会清空旧密钥，导出备份会排除密钥。浏览器直连接口仍取决于提供商的 CORS 支持；Android 使用 CapacitorHttp。HTTPS 为默认要求，本机 localhost 调试接口允许 HTTP。取消原生请求会停止等待并忽略晚到的回复，底层连接由超时结束。
+
+## 开发与验证
+
+需要 Node.js 20 或以上。
 
 ```bash
-npm install
-npm run dev        # 浏览器预览（http://localhost:5173）
+npm ci
+npm run dev
 ```
 
-## 构建 APK
+```bash
+npm test                         # 数据、推荐、存储和接口回归
+npm run build                    # TypeScript 检查与生产构建
+npx playwright install chromium # 首次安装测试浏览器
+npm run test:e2e                  # 先完成 build；桌面、手机与窄屏流程
+```
+
+浏览器测试使用独立上下文和模拟接口，不会调用真实付费 AI 服务。失败时的截图与 trace 位于 `test-results/`。
+
+## Android 构建
+
+需要 Java 21、Android SDK 35，以及本机 `android/local.properties` 中的 SDK 路径。
 
 ```bash
-npm run build          # 构建前端到 dist
-npx cap sync android   # 将前端同步到 Android 工程
+npm run android:sync
 cd android
-./gradlew assembleDebug    # 调试包
-./gradlew assembleRelease  # 发布包（需配置签名）
+./gradlew assembleDebug
+./gradlew assembleRelease
 ```
 
-> 发布签名：创建 `android/keystore.properties`（内容见 `.gitignore` 说明），
-> 格式如下（此文件与 keystore 文件**切勿提交到仓库**）：
->
-> ```properties
-> storeFile=your.keystore
-> storePassword=your-password
-> keyAlias=your-alias
-> keyPassword=your-key-password
-> ```
+Windows 使用 `gradlew.bat`。本机发布签名通过 `android/keystore.properties` 配置，文件与 keystore 均不应提交：
 
-## AI 调酒师配置
+```properties
+storeFile=mixology.keystore
+storePassword=your-password
+keyAlias=your-alias
+keyPassword=your-key-password
+```
 
-1. 打开「调酒师」→ 右上角设置
-2. 选择提供商预设（OpenAI / DeepSeek / Kimi / 智谱 / 通义千问 / SiliconFlow / 自定义）
-3. 填入该平台申请的 API 密钥
-4. 点击「测试连接」确认连通后保存
+升级已有安装时必须使用相同签名，并提高 `versionCode`。切换签名前先导出备份。
 
-## GitHub Actions 自动构建
+## 持续集成与发布
 
-仓库内置了 [GitHub Actions 工作流](./.github/workflows/build.yml)：
+Pull Request、推送 `main` 和手动运行会执行回归测试、生产构建、浏览器流程验证与 APK 构建。推送 `v*` 标签时，必须配置全部四个签名 Secret：`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。标签发布只上传正式签名的 release APK；缺少签名配置或 release 产物会失败，不会退回发布 debug APK。
 
-- 推送到 `main` 或手动触发：自动构建 **debug APK**，并作为 Artifact 上传
-- 推送 `v*` 标签（如 `git tag v1.4.0 && git push --tags`）：自动构建并**发布到 Releases**，附带 APK 下载
+## 技术结构
 
-> 要出**正式签名的 release APK**，请在仓库 Settings → Secrets and variables → Actions 中添加以下密钥（对应本机 `mixology.keystore`）：
->
-> | Secret | 说明 |
-> |---|---|
-> | `KEYSTORE_BASE64` | 密钥库文件的 Base64 编码（PowerShell：`[Convert]::ToBase64String([IO.File]::ReadAllBytes("android\app\mixology.keystore"))`） |
-> | `KEYSTORE_PASSWORD` | 密钥库密码 |
-> | `KEY_ALIAS` | 别名（本项目为 `mixology`） |
-> | `KEY_PASSWORD` | 密钥密码 |
->
-> 未配置上述密钥时，Actions 仍会产出可安装的 debug APK。
+```text
+src/App.tsx       页面与交互
+src/styles.css    响应式界面
+src/domain.ts     原料规范化、匹配、推荐与配方检索
+src/storage.ts    校验、持久化、备份与恢复
+src/backupExport.ts 浏览器下载与原生文件分享
+src/api.ts        请求预算、取消、超时与错误处理
+src/data/         内置配方
+tests/            核心逻辑回归
+e2e/              浏览器流程回归
+android/          Capacitor Android 工程
+```
 
-## 数据与版权
-
-- 内置配方整理自国际调酒师协会（IBA）官方名录及公开资料，仅供学习交流
-- 调味与饮用量请根据个人情况调整，请理性饮酒
-
-## License
-
-[MIT](./LICENSE)
+配方仅供学习交流，请根据个人情况调整饮用量。代码采用 [MIT](./LICENSE) 协议。
